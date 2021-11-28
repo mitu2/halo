@@ -16,11 +16,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.criteria.CriteriaBuilder.In;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -149,7 +151,7 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
 
         PostQuery postQuery = new PostQuery();
         postQuery.setKeyword(keyword);
-        postQuery.setStatus(PostStatus.PUBLISHED);
+        postQuery.setStatuses(Set.of(PostStatus.PUBLISHED));
 
         // Build specification and find all
         return postRepository.findAll(buildSpecByQuery(postQuery), pageable);
@@ -412,10 +414,14 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
                                 tagName = StringUtils.strip(tagName, "\"");
                                 tagName = StringUtils.strip(tagName, "\'");
                                 tag = tagService.getByName(tagName);
+                                String slug = SlugUtils.slug(tagName);
+                                if (null == tag) {
+                                    tag = tagService.getBySlug(slug);
+                                }
                                 if (null == tag) {
                                     tag = new Tag();
                                     tag.setName(tagName);
-                                    tag.setSlug(SlugUtils.slug(tagName));
+                                    tag.setSlug(slug);
                                     tag = tagService.create(tag);
                                 }
                                 tagIds.add(tag.getId());
@@ -783,7 +789,8 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
         postDetailVO.setMetaIds(metaIds);
         postDetailVO.setMetas(postMetaService.convertTo(postMetaList));
 
-        postDetailVO.setCommentCount(postCommentService.countByPostId(post.getId()));
+        postDetailVO.setCommentCount(postCommentService.countByStatusAndPostId(
+            CommentStatus.PUBLISHED, post.getId()));
 
         postDetailVO.setFullPath(buildFullPath(post));
 
@@ -803,8 +810,9 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new LinkedList<>();
 
-            if (postQuery.getStatus() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("status"), postQuery.getStatus()));
+            Set<PostStatus> statuses = postQuery.getStatuses();
+            if (!CollectionUtils.isEmpty(statuses)) {
+                predicates.add(root.get("status").in(statuses));
             }
 
             if (postQuery.getCategoryId() != null) {
