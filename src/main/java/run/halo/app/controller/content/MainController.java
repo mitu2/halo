@@ -48,11 +48,9 @@ public class MainController {
     }
 
     @GetMapping("${halo.admin-path:admin}")
-    public void admin(HttpServletResponse response) throws IOException {
-        String adminIndexRedirectUri =
-            HaloUtils.ensureBoth(haloProperties.getAdminPath(), HaloUtils.URL_SEPARATOR)
-                + INDEX_REDIRECT_URI;
-        response.sendRedirect(adminIndexRedirectUri);
+    public String admin() throws IOException {
+        return HaloUtils.ensureBoth(haloProperties.getAdminPath(), HaloUtils.URL_SEPARATOR)
+            + INDEX_REDIRECT_URI;
     }
 
     @GetMapping("version")

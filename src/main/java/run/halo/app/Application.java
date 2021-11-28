@@ -2,6 +2,7 @@ package run.halo.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
 
 /**
  * Halo main class.
@@ -18,7 +19,9 @@ public class Application {
             "optional:file:${user.home}/.halo/,optional:file:${user.home}/halo-dev/");
 
         // Run application
-        SpringApplication.run(Application.class, args);
+        final SpringApplication haloApplication = new SpringApplication(Application.class);
+        haloApplication.addListeners(new ApplicationPidFileWriter());
+        haloApplication.run(args);
     }
 
 }
