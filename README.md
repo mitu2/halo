@@ -4,7 +4,7 @@
     </a>
 </p>
 
-> Halo 是一款现代化的个人独立博客系统，给习惯写博客的同学多一个选择。
+<p align="center"><b>Halo</b> [ˈheɪloʊ]，一款现代化的开源博客/CMS系统，值得一试。</p>
 
 <p align="center">
 <a href="https://github.com/halo-dev/halo/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/halo-dev/halo.svg?style=flat-square" /></a>
@@ -12,15 +12,15 @@
 <a href="https://hub.docker.com/r/halohub/halo"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/halohub/halo?style=flat-square" /></a>
 <a href="https://github.com/halo-dev/halo/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/halo-dev/halo.svg?style=flat-square" /></a>
 <a href="https://github.com/halo-dev/halo/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/halo-dev/halo/Halo%20CI?style=flat-square" /></a>
+<br />
+<a href="https://halo.run">官网</a>
+<a href="https://docs.halo.run">文档</a>
+<a href="https://bbs.halo.run">社区</a>
+<a href="https://gitee.com/halo-dev">Gitee</a>
+<a href="https://t.me/halo_dev">Telegram 频道</a>
 </p>
 
 ------------------------------
-
-## 简介
-
-**Halo** `[ˈheɪloʊ]`，一个优秀的开源博客发布应用，值得一试。
-
-[官网](https://halo.run) | [文档](https://docs.halo.run) | [社区](https://bbs.halo.run) | [Gitee](https://gitee.com/halo-dev) | [Telegram 频道](https://t.me/halo_dev)
 
 ## 快速开始
 
@@ -29,7 +29,7 @@
 下载最新的 Halo 运行包：
 
 ```bash
-curl -L https://github.com/halo-dev/halo/releases/download/v1.4.15/halo-1.4.15.jar --output halo.jar
+curl -L https://github.com/halo-dev/halo/releases/download/v1.4.17/halo-1.4.17.jar --output halo.jar
 ```
 
 其他地址：<https://docs.halo.run/getting-started/downloads>
@@ -45,6 +45,14 @@ docker run -it -d --name halo -p 8090:8090 -v ~/.halo:/root/.halo --restart=alwa
 ```
 
 详细部署文档请查阅：<https://docs.halo.run/getting-started/install/linux>
+
+## 在线体验
+
+- 环境地址：<https://demo.halo.run>
+- 后台地址：<https://demo.halo.run/admin>
+- 用户名：demo
+- 密码：P@ssw0rd123..
+- 使用前请阅读：<https://demo.halo.run/archives/tips>
 
 ## 生态
 
@@ -73,9 +81,3 @@ Halo 使用 GPL-v3.0 协议开源，请遵守开源协议。
 ## 状态
 
 ![Repobeats analytics](https://repobeats.axiom.co/api/embed/ad008b2151c22e7cf734d2688befaa795d593b95.svg "Repobeats analytics image")
-
-## 赞助我们
-
-> 如果 Halo 对您有帮助，不妨赞助我们
-
-<https://docs.halo.run/contribution/sponsor>
