@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import run.halo.app.model.entity.Category;
 import run.halo.app.model.entity.Post;
 import run.halo.app.model.entity.PostCategory;
 import run.halo.app.model.enums.PostStatus;
+import run.halo.app.model.projection.CategoryIdPostStatusProjection;
 import run.halo.app.model.vo.CategoryVO;
 import run.halo.app.repository.PostCategoryRepository;
 import run.halo.app.repository.PostRepository;
@@ -76,23 +78,18 @@ public class PostCategoryServiceImpl extends AbstractCrudService<PostCategory, I
 
     @Override
     public List<Category> listCategoriesBy(Integer postId) {
-        return listCategoriesBy(postId, false);
-    }
-
-    @Override
-    public List<Category> listCategoriesBy(Integer postId, boolean queryEncryptCategory) {
         Assert.notNull(postId, "Post id must not be null");
 
         // Find all category ids
         Set<Integer> categoryIds = postCategoryRepository.findAllCategoryIdsByPostId(postId);
 
-        return categoryService.listAllByIds(categoryIds, queryEncryptCategory);
+        return categoryService.listAllByIds(categoryIds);
     }
 
 
     @Override
     public Map<Integer, List<Category>> listCategoryListMap(
-        Collection<Integer> postIds, boolean queryEncryptCategory) {
+        Collection<Integer> postIds) {
         if (CollectionUtils.isEmpty(postIds)) {
             return Collections.emptyMap();
         }
@@ -105,7 +102,7 @@ public class PostCategoryServiceImpl extends AbstractCrudService<PostCategory, I
             ServiceUtils.fetchProperty(postCategories, PostCategory::getCategoryId);
 
         // Find all categories
-        List<Category> categories = categoryService.listAllByIds(categoryIds, queryEncryptCategory);
+        List<Category> categories = categoryService.listAllByIds(categoryIds);
 
         // Convert to category map
         Map<Integer, Category> categoryMap = ServiceUtils.convertToMap(categories, Category::getId);
@@ -309,13 +306,11 @@ public class PostCategoryServiceImpl extends AbstractCrudService<PostCategory, I
     }
 
     @Override
-    public List<CategoryWithPostCountDTO> listCategoryWithPostCountDto(@NonNull Sort sort,
-        boolean queryEncryptCategory) {
+    public List<CategoryWithPostCountDTO> listCategoryWithPostCountDto(@NonNull Sort sort) {
         Assert.notNull(sort, "Sort info must not be null");
-        List<Category> categories = categoryService.listAll(sort, queryEncryptCategory);
+        List<Category> categories = categoryService.listAll(sort);
         List<CategoryVO> categoryTreeVo = categoryService.listToTree(categories);
-        populatePostIds(categoryTreeVo);
-
+        populatePostIds(categoryTreeVo, postStatus -> !PostStatus.RECYCLE.equals(postStatus));
         // Convert and return
         return flatTreeToList(categoryTreeVo);
     }
@@ -338,12 +333,16 @@ public class PostCategoryServiceImpl extends AbstractCrudService<PostCategory, I
         return result;
     }
 
-    private void populatePostIds(List<CategoryVO> categoryTree) {
+    private void populatePostIds(List<CategoryVO> categoryTree,
+        Predicate<PostStatus> statusFilter) {
         Assert.notNull(categoryTree, "The categoryTree must not be null.");
-        Map<Integer, Set<Integer>> categoryPostIdsMap = postCategoryRepository.findAll()
-            .stream()
-            .collect(Collectors.groupingBy(PostCategory::getCategoryId,
-                Collectors.mapping(PostCategory::getPostId, Collectors.toSet())));
+        Map<Integer, Set<Integer>> categoryPostIdsMap =
+            postCategoryRepository.findAllWithPostStatus()
+                .stream()
+                .filter(record -> statusFilter.test(record.getPostStatus()))
+                .collect(Collectors.groupingBy(CategoryIdPostStatusProjection::getCategoryId,
+                    Collectors.mapping(CategoryIdPostStatusProjection::getPostId,
+                        Collectors.toSet())));
 
         walkCategoryTree(categoryTree, category -> {
             // Set post count
